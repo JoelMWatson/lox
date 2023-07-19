@@ -1,18 +1,15 @@
-﻿<Properties StartupConfiguration="{FCF45901-6F20-4BA3-BC43-B74D83C2A0CE}|Default">
+﻿<Properties StartupConfiguration="{7B658508-2610-4934-9D66-43D5A5643E5B}|Default">
   <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.ItemProperties.cslox PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Program.cs">
     <Files>
-      <File FileName="Program.cs" Line="1" Column="1" />
-      <File FileName="Expr.cs" Line="29" Column="18" />
-      <File FileName="AstPrinter.cs" Line="17" Column="37" />
+      <File FileName="Program.cs" Line="102" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="cslox">
-            <Node name="cslox">
+          <Node name="tools" expanded="True">
+            <Node name="tools">
               <Node name="Program.cs" selected="True" />
             </Node>
           </Node>
@@ -20,7 +17,8 @@
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.ItemProperties.tools PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

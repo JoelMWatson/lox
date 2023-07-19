@@ -1,0 +1,15 @@
+/Users/joel/Projects/lox/tools/bin/Release/net7.0/tools
+/Users/joel/Projects/lox/tools/bin/Release/net7.0/tools.deps.json
+/Users/joel/Projects/lox/tools/bin/Release/net7.0/tools.runtimeconfig.json
+/Users/joel/Projects/lox/tools/bin/Release/net7.0/tools.dll
+/Users/joel/Projects/lox/tools/bin/Release/net7.0/tools.pdb
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/tools.csproj.AssemblyReference.cache
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/tools.GeneratedMSBuildEditorConfig.editorconfig
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/tools.AssemblyInfoInputs.cache
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/tools.AssemblyInfo.cs
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/tools.csproj.CoreCompileInputs.cache
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/tools.dll
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/refint/tools.dll
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/tools.pdb
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/tools.genruntimeconfig.cache
+/Users/joel/Projects/lox/tools/obj/Release/net7.0/ref/tools.dll
