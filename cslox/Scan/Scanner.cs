@@ -116,7 +116,7 @@
 					}
 					else
 					{
-						Program.Error(line, "Unexpected character."); break;
+						Lox.Error(new Token(TokenType.NIL, c.ToString(), "", line), "Unexpected character.");
 					}
 					break;
             }
@@ -188,7 +188,7 @@
 
 			if (IsAtEnd())
 			{
-				Program.Error(line, "Unterminated string.");
+				Lox.Error(new Token(TokenType.EOF, Peek().ToString(), "", line), "Unterminated string.");
 				return;
 			}
 

@@ -48,7 +48,7 @@ public abstract class Expr
 
     public class Literal : Expr
     {
-        public Literal(Object value)
+        public Literal(Object? value)
         {
             this.value = value;
         }
@@ -58,7 +58,7 @@ public abstract class Expr
             return visitor.visitLiteralExpr(this);
         }
 
-        public readonly Object value;
+        public readonly Object? value;
     }
 
     public class Unary : Expr
