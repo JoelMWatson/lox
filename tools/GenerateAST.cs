@@ -1,7 +1,7 @@
 ﻿namespace tools;
 
 // Generates AST
-class Program
+class GenerateAST
 {
     static void Main(string[] args)
     {
@@ -13,10 +13,11 @@ class Program
         String outputDir = args[0];
         DefineAST(outputDir, "Expr", new List<string>()
         {
-            "Binary   : Expr left, Token op, Expr right",
-            "Grouping : Expr expression",
-            "Literal  : Object value",
-            "Unary    : Token op, Expr right"
+            "Binary       : Expr left, Token op, Expr right",
+            "Grouping     : Expr expression",
+            "Literal      : Object value",
+            "Unary        : Token op, Expr right",
+            "Conditional  : Token op, Expr cond, Expr left, Expr right"
         });
     }
 

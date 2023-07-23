@@ -13,23 +13,28 @@ namespace cslox.Utilities
 			return expr.Accept(this);
 		}
 
-        public string visitBinaryExpr(Expr.Binary expr)
+        private string visitBinaryExpr(Expr.Binary expr)
         {
             return Parenthesize(expr.op.lexeme, expr.left, expr.right);
         }
 
-        public string visitGroupingExpr(Expr.Grouping expr)
+        private string visitConditionalExpr(Expr.Conditional expr)
+        {
+            return Parenthesize(expr.op.lexeme, expr.cond, expr.left, expr.right);
+        }
+
+        private string visitGroupingExpr(Expr.Grouping expr)
         {
             return Parenthesize("group", expr.expression);
         }
 
-        public string visitLiteralExpr(Expr.Literal expr)
+        private string visitLiteralExpr(Expr.Literal expr)
         {
             if (expr.value == null) return "nil";
             return expr.value.ToString()!;
         }
 
-        public string visitUnaryExpr(Expr.Unary expr)
+        private string visitUnaryExpr(Expr.Unary expr)
         {
             return Parenthesize(expr.op.lexeme, expr.right);
         }

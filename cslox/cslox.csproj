@@ -11,10 +11,12 @@
     <None Remove="Scan\" />
     <None Remove="Parse\" />
     <None Remove="Utilities\" />
+    <None Remove="Interpret\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scan\" />
     <Folder Include="Parse\" />
     <Folder Include="Utilities\" />
+    <Folder Include="Interpret\" />
   </ItemGroup>
 </Project>

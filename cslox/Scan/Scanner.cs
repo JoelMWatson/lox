@@ -66,6 +66,8 @@
                 case '+': AddToken(TokenType.PLUS); break;
                 case ';': AddToken(TokenType.SEMICOLON); break;
                 case '*': AddToken(TokenType.STAR); break;
+                case '?': AddToken(TokenType.Q_MARK); break;
+                case ':': AddToken(TokenType.COLON); break;
 
                 // One or two char
                 case '!':

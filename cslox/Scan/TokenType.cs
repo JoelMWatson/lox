@@ -14,6 +14,8 @@
 		SEMICOLON,
 		SLASH,
 		STAR,
+		Q_MARK,
+		COLON,
 
 		// One or two char
 		BANG,

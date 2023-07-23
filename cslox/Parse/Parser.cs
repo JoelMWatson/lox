@@ -26,7 +26,33 @@ namespace cslox.Parse
 
         private Expr Expression()
         {
-            return Equality();
+            return Comma();
+        }
+
+        private Expr Comma()
+        {
+            Expr expr = Conditional();
+            while (Match(TokenType.COMMA))
+            {
+                Token op = Previous();
+                Expr right = Conditional();
+                expr = new Expr.Binary(expr, op, right);
+            }
+            return expr;
+        }
+
+        private Expr Conditional()
+        {
+            Expr expr = Equality();
+            while(Match(TokenType.Q_MARK))
+            {
+                Token op = Previous();
+                Expr left = Expression();
+                Consume(TokenType.COLON, "Expected ':' for ternary expression");
+                Expr right = Conditional();
+                expr = new Expr.Conditional(op, expr, left, right);
+            }
+            return expr;
         }
 
         private Expr Equality()

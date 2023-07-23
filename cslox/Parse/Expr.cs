@@ -10,6 +10,7 @@ public abstract class Expr
         T visitGroupingExpr(Grouping expr);
         T visitLiteralExpr(Literal expr);
         T visitUnaryExpr(Unary expr);
+        T visitConditionalExpr(Conditional expr);
     }
 
     public class Binary : Expr
@@ -48,7 +49,7 @@ public abstract class Expr
 
     public class Literal : Expr
     {
-        public Literal(Object? value)
+        public Literal(Object value)
         {
             this.value = value;
         }
@@ -58,7 +59,7 @@ public abstract class Expr
             return visitor.visitLiteralExpr(this);
         }
 
-        public readonly Object? value;
+        public readonly Object value;
     }
 
     public class Unary : Expr
@@ -75,6 +76,27 @@ public abstract class Expr
         }
 
         public readonly Token op;
+        public readonly Expr right;
+    }
+
+    public class Conditional : Expr
+    {
+        public Conditional(Token op, Expr cond, Expr left, Expr right)
+        {
+            this.op = op;
+            this.cond = cond;
+            this.left = left;
+            this.right = right;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitConditionalExpr(this);
+        }
+
+        public readonly Token op;
+        public readonly Expr cond;
+        public readonly Expr left;
         public readonly Expr right;
     }
 
