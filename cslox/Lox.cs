@@ -62,7 +62,7 @@ namespace cslox
 
             if (hadError) return;
 
-            interpreter.Interpret(expression);dd
+            interpreter.Interpret(expression);
         }
 
         // Bare bones error handling

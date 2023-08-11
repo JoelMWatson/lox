@@ -48,11 +48,13 @@ namespace cslox.Interpret
                 case TokenType.PLUS:
                     if (left is double)
                     {
-                        return (double)left + (double)right;
+                        if (right is double) return (double)left + (double)right;
+                        if (right is string) return ((double)left).ToString() + (string)right;
                     }
                     else if (left is string)
                     {
-                        return (string)left + (string)right;
+                        if (right is string) return (string)left + (string)right;
+                        if (right is double) return (string)left + ((double)right).ToString();
                     }
                     throw new RuntimeError(expr.op, "Operands must be two numbers or strings.");
                 case TokenType.MINUS:
@@ -63,7 +65,8 @@ namespace cslox.Interpret
                     return (double)left * (double)right;
                 case TokenType.SLASH:
                     CheckNumberOperands(expr.op, left, right);
-                    return (double)left / (double)right;
+                    if ((double)right != 0) return (double)left / (double)right;
+                    throw new RuntimeError(expr.op, "Cannot divide by zero.");
                 case TokenType.GREATER:
                     CheckNumberOperands(expr.op, left, right);
                     return (double)left > (double)right;
