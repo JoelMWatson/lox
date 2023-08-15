@@ -1,16 +1,35 @@
-using cslox.Scan;
+using Cslox.Scan;
 
-namespace cslox;
+namespace Cslox;
 public abstract class Expr
 {
 
     public interface Visitor<T>
     {
+        T visitAssignExpr(Assign expr);
         T visitBinaryExpr(Binary expr);
         T visitGroupingExpr(Grouping expr);
         T visitLiteralExpr(Literal expr);
+        T visitVariableExpr(Variable expr);
         T visitUnaryExpr(Unary expr);
         T visitConditionalExpr(Conditional expr);
+    }
+
+    public class Assign : Expr
+    {
+        public Assign(Token name, Expr value)
+        {
+            this.name = name;
+            this.value = value;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitAssignExpr(this);
+        }
+
+        public readonly Token name;
+        public readonly Expr value;
     }
 
     public class Binary : Expr
@@ -60,6 +79,21 @@ public abstract class Expr
         }
 
         public readonly Object value;
+    }
+
+    public class Variable : Expr
+    {
+        public Variable(Token name)
+        {
+            this.name = name;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitVariableExpr(this);
+        }
+
+        public readonly Token name;
     }
 
     public class Unary : Expr

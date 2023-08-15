@@ -13,11 +13,21 @@ class GenerateAST
         String outputDir = args[0];
         DefineAST(outputDir, "Expr", new List<string>()
         {
+            "Assign       : Token name, Expr value",
             "Binary       : Expr left, Token op, Expr right",
             "Grouping     : Expr expression",
             "Literal      : Object value",
+            "Variable     : Token name",
             "Unary        : Token op, Expr right",
             "Conditional  : Token op, Expr cond, Expr left, Expr right"
+        });
+
+        DefineAST(outputDir, "Stmt", new List<string>()
+        {
+            "Block      : List<Stmt> statements",
+            "Expression : Expr expression",
+            "Print      : Expr expression",
+            "Var        : Token name, Expr initializer"
         });
     }
 
@@ -26,9 +36,9 @@ class GenerateAST
         String path = $"{outputDir}/{name}.cs";
         using (StreamWriter writer = new StreamWriter(path))
         {
-            writer.WriteLine("using cslox.Scan;");
+            writer.WriteLine("using Cslox.Scan;");
             writer.WriteLine();
-            writer.WriteLine("namespace cslox;");
+            writer.WriteLine("namespace Cslox;");
             writer.WriteLine($"public abstract class {name}");
             writer.WriteLine("{");
             writer.WriteLine();

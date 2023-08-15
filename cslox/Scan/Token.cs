@@ -1,4 +1,4 @@
-﻿namespace cslox.Scan
+﻿namespace Cslox.Scan
 {
 	public class Token
 	{

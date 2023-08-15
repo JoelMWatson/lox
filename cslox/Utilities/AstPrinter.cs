@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace cslox.Utilities
+namespace Cslox.Utilities
 {
 	public class AstPrinter : Expr.Visitor<string>
 	{
@@ -12,6 +12,11 @@ namespace cslox.Utilities
 		{
 			return expr.Accept(this);
 		}
+
+        public string visitAssignExpr(Expr.Assign expr)
+        {
+            return Parenthesize(expr.name.lexeme, expr.value);
+        }
 
         public string visitBinaryExpr(Expr.Binary expr)
         {
@@ -37,6 +42,11 @@ namespace cslox.Utilities
         public string visitUnaryExpr(Expr.Unary expr)
         {
             return Parenthesize(expr.op.lexeme, expr.right);
+        }
+
+        public string visitVariableExpr(Expr.Variable expr)
+        {
+            return Parenthesize("Var", expr);
         }
 
         private string Parenthesize(string name, params Expr[] exprs)

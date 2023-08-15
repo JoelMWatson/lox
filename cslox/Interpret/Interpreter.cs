@@ -1,24 +1,42 @@
-﻿using cslox.Scan;
+﻿using Cslox.Scan;
+using Cslox.Parse;
 
-namespace cslox.Interpret
+namespace Cslox.Interpret
 {
-	public class Interpreter : Expr.Visitor<Object>
+	public class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
 	{
+        private LoxEnvironment environment = new LoxEnvironment();
+
 		public Interpreter()
 		{
 		}
 
-        public void Interpret(Expr expr)
+        public void Interpret(List<Stmt> statements)
         {
             try
             {
-                Object value = Evaluate(expr);
-                Console.WriteLine(Stringify(value));
+                foreach (Stmt statement in statements)
+                {
+                    Execute(statement);
+                }
             }
             catch(RuntimeError error)
             {
                 Lox.RuntimeError(error);
             }     
+        }
+
+        public void Interpret(Expr expression)
+        {
+            try
+            {
+                object value = Evaluate(expression);
+                Console.WriteLine(Stringify(value));
+            }
+            catch (RuntimeError error)
+            {
+                Lox.RuntimeError(error);
+            }
         }
 
         private string Stringify(object obj)
@@ -40,8 +58,8 @@ namespace cslox.Interpret
 
         public object visitBinaryExpr(Expr.Binary expr)
         {
-            Object left = Evaluate(expr.left);
-            Object right = Evaluate(expr.right);
+            object left = Evaluate(expr.left);
+            object right = Evaluate(expr.right);
 
             switch (expr.op.type)
             {
@@ -87,7 +105,7 @@ namespace cslox.Interpret
             return null;
         }
 
-        private void CheckNumberOperands(Token op, Object left, Object right)
+        private void CheckNumberOperands(Token op, object left, object right)
         {
             if (left is double && right is double) return;
             throw new RuntimeError(op, "Operands must be numbers.");
@@ -117,7 +135,7 @@ namespace cslox.Interpret
 
         public object visitUnaryExpr(Expr.Unary expr)
         {
-            Object right = Evaluate(expr.right);
+            object right = Evaluate(expr.right);
 
             switch (expr.op.type)
             {
@@ -131,7 +149,19 @@ namespace cslox.Interpret
             return null;
         }
 
-        private void CheckNumberOperand(Token op, Object operand)
+        public object visitVariableExpr(Expr.Variable expr)
+        {
+            return environment.Get(expr.name);
+        }
+
+        public object visitAssignExpr(Expr.Assign expr)
+        {
+            object value = Evaluate(expr);
+            environment.Assign(expr.name, value);
+            return value;
+        }
+
+        private void CheckNumberOperand(Token op, object operand)
         {
             if (operand is double) return;
             throw new RuntimeError(op, "Operand must be a number.");
@@ -142,21 +172,71 @@ namespace cslox.Interpret
             return expr.Accept(this);
         }
 
-        private bool IsTruthy(Object obj)
+        private void Execute(Stmt stmt)
+        {
+            stmt.Accept(this);
+        }
+
+        private bool IsTruthy(object obj)
         {
             if (obj == null) return false;
             if (obj is bool) return (bool)obj;
             return true;
         }
 
-        private bool IsEqual(Object? left, Object? right)
+        private bool IsEqual(object? left, object? right)
         {
             if (left == null && right == null) return true;
             if (left == null) return false;
             return left.Equals(right);
         }
 
+        public object visitExpressionStmt(Stmt.Expression stmt)
+        {
+            Evaluate(stmt.expression);
+            return null; // No void type ref in C#
+        }
 
+        public object visitPrintStmt(Stmt.Print stmt)
+        {
+            object value = Evaluate(stmt.expression);
+            Console.WriteLine(Stringify(value));
+            return null; // No void type ref in C#
+        }
+
+        public object visitVarStmt(Stmt.Var stmt)
+        {
+            object value = null;
+            if (stmt.initializer != null)
+            {
+                value = Evaluate(stmt.initializer);
+            }
+            environment.Define(stmt.name.lexeme, value);
+            return null; // No void type ref in C#
+        }
+
+        public object visitBlockStmt(Stmt.Block stmt)
+        {
+            ExecuteBlock(stmt.statements, new LoxEnvironment(environment));
+            return null; // No void type ref in C#
+        }
+
+        private void ExecuteBlock(List<Stmt> stmts, LoxEnvironment env)
+        {
+            LoxEnvironment prev = this.environment;
+            try
+            {
+                this.environment = env;
+                foreach (Stmt stmt in stmts)
+                {
+                    Execute(stmt);
+                }
+            }
+            finally
+            {
+                this.environment = prev;
+            }
+        }
     }
 }
 

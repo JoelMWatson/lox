@@ -1,9 +1,8 @@
-﻿using cslox.Interpret;
-using cslox.Parse;
-using cslox.Scan;
-using cslox.Utilities;
+﻿using Cslox.Interpret;
+using Cslox.Parse;
+using Cslox.Scan;
 
-namespace cslox
+namespace Cslox
 {
     public class Lox
     {
@@ -15,7 +14,7 @@ namespace cslox
         {
             if (args.Length > 1)
             {
-                Console.WriteLine("Usage: cslox: [script]");
+                Console.WriteLine("Usage: Cslox: [script]");
                 Environment.Exit(64);
             }
             else if (args.Length == 1)
@@ -58,11 +57,11 @@ namespace cslox
             Scanner scanner = new Scanner(source);
             List<Token> tokens = scanner.ScanTokens();
             Parser parser = new Parser(tokens);
-            Expr expression = parser.Parse();
+            List<Stmt> statements = parser.Parse();
 
             if (hadError) return;
 
-            interpreter.Interpret(expression);
+            interpreter.Interpret(statements);
         }
 
         // Bare bones error handling

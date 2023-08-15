@@ -1,6 +1,6 @@
-﻿using cslox.Scan;
+﻿using Cslox.Scan;
 
-namespace cslox.Interpret
+namespace Cslox.Interpret
 {
 	public class RuntimeError : Exception
 	{
