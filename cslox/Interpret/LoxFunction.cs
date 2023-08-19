@@ -2,30 +2,32 @@
 {
 	public class LoxFunction : LoxCallable
 	{
-        private readonly Stmt.Function declaration;
+        private readonly string name;
+        private readonly Expr.Function function;
         private readonly LoxEnvironment closure;
 
-		public LoxFunction(Stmt.Function declaration, LoxEnvironment closure)
+		public LoxFunction(string name, Expr.Function function, LoxEnvironment closure)
 		{
-            this.declaration = declaration;
+            this.name = name;
+            this.function = function;
             this.closure = closure;
 		}
 
         public int Arity()
         {
-            return declaration.parameters.Count();
+            return function.parameters.Count();
         }
 
         public object Call(Interpreter interpreter, List<object> arguments)
         {
             LoxEnvironment environment = new LoxEnvironment(closure);
-            for (int i=0; i < declaration.parameters.Count(); i++)
+            for (int i=0; i < function.parameters.Count(); i++)
             {
-                environment.Define(declaration.parameters[i].lexeme, arguments[i]);
+                environment.Define(function.parameters[i].lexeme, arguments[i]);
             }
             try
             {
-                interpreter.ExecuteBlock(declaration.body, environment);
+                interpreter.ExecuteBlock(function.body, environment);
             } catch (ReturnException value)
             {
                 return value.value;
@@ -35,7 +37,8 @@
 
         public override string ToString()
         {
-            return $"<Fn {declaration.name.lexeme}>";
+            if (name == null) return "<Fn>";
+            return $"<Fn {name}>";
         }
 
     }

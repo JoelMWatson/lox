@@ -10,6 +10,7 @@ public abstract class Expr
         T visitBinaryExpr(Binary expr);
         T visitCallExpr(Call expr);
         T visitConditionalExpr(Conditional expr);
+        T visitFunctionExpr(Function expr);
         T visitGroupingExpr(Grouping expr);
         T visitLiteralExpr(Literal expr);
         T visitLogicalExpr(Logical expr);
@@ -91,6 +92,23 @@ public abstract class Expr
         public readonly Expr cond;
         public readonly Expr left;
         public readonly Expr right;
+    }
+
+    public class Function : Expr
+    {
+        public Function(List<Token> parameters, List<Stmt> body)
+        {
+            this.parameters = parameters;
+            this.body = body;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitFunctionExpr(this);
+        }
+
+        public readonly List<Token> parameters;
+        public readonly List<Stmt> body;
     }
 
     public class Grouping : Expr

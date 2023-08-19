@@ -61,7 +61,11 @@ namespace Cslox.Parse
         {
             try
             {
-                if (Match(TokenType.FUN)) return Function("funciton");
+                if (Check(TokenType.FUN) && CheckNext(TokenType.IDENTIFIER))
+                {
+                    Consume(TokenType.FUN, null);
+                    return Function("funciton");
+                }
                 if (Match(TokenType.VAR)) return VarDeclaration();
                 return Statement();
             }
@@ -214,6 +218,11 @@ namespace Cslox.Parse
         private Stmt.Function Function(string kind)
         {
             Token name = Consume(TokenType.IDENTIFIER, $"Expect {kind} name.");
+            return new Stmt.Function(name, FunctionBody(kind));
+        }
+
+        private Expr.Function FunctionBody(string kind)
+        {
             Consume(TokenType.LEFT_PAREN, $"Expect '(' after {kind} name.");
             List<Token> parameters = new List<Token>();
             if (!Check(TokenType.RIGHT_PAREN))
@@ -230,7 +239,7 @@ namespace Cslox.Parse
             Consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
             Consume(TokenType.LEFT_BRACE, $"Expect '}}' before {kind} body.");
             List<Stmt> body = Block();
-            return new Stmt.Function(name, parameters, body);
+            return new Expr.Function(parameters, body);
         }
 
         private Expr Assignment()
@@ -419,6 +428,8 @@ namespace Cslox.Parse
                 return new Expr.Grouping(expr);
             }
 
+            if (Match(TokenType.FUN)) return FunctionBody("function");
+
             throw Error(Peek(), "Expected expression.");
         }
 
@@ -439,6 +450,13 @@ namespace Cslox.Parse
         {
             if (IsAtEnd()) return false;
             return Peek().type == type;
+        }
+
+        private bool CheckNext(TokenType tokenType)
+        {
+            if (IsAtEnd()) return false;
+            if (tokens[current + 1].type == TokenType.EOF) return false;
+            return tokens[current + 1].type == tokenType;
         }
 
         private Token Advance()

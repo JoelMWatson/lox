@@ -204,6 +204,11 @@ namespace Cslox.Interpret
             return function.Call(this, arguments);
         }
 
+        public object visitFunctionExpr(Expr.Function expr)
+        {
+            return new LoxFunction(null, expr, environment);
+        }
+
         private void CheckNumberOperand(Token op, object operand)
         {
             if (operand is double) return;
@@ -316,7 +321,7 @@ namespace Cslox.Interpret
 
         public object visitFunctionStmt(Stmt.Function stmt)
         {
-            LoxFunction function = new LoxFunction(stmt, environment);
+            LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, environment);
             environment.Define(stmt.name.lexeme, function);
             return null; // No void type ref in C#
         }

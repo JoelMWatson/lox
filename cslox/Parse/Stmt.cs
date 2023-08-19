@@ -62,11 +62,10 @@ public abstract class Stmt
 
     public class Function : Stmt
     {
-        public Function(Token name, List<Token> parameters, List<Stmt> body)
+        public Function(Token name, Expr.Function function)
         {
             this.name = name;
-            this.parameters = parameters;
-            this.body = body;
+            this.function = function;
         }
 
         public override T Accept<T>(Visitor<T> visitor)
@@ -75,8 +74,7 @@ public abstract class Stmt
         }
 
         public readonly Token name;
-        public readonly List<Token> parameters;
-        public readonly List<Stmt> body;
+        public readonly Expr.Function function;
     }
 
     public class If : Stmt
