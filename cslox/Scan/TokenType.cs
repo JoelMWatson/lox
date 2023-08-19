@@ -20,6 +20,7 @@
 		// One or two char
 		BANG,
 		BANG_EQUAL,
+		BREAK,
 		EQUAL,
 		EQUAL_EQUAL,
 		GREATER,

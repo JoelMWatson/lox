@@ -1,14 +1,21 @@
 ﻿using Cslox.Scan;
-using Cslox.Parse;
+using Cslox.Interpret.Natives;
 
 namespace Cslox.Interpret
 {
-	public class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
-	{
-        private LoxEnvironment environment = new LoxEnvironment();
+    public class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
+    {
+        private readonly LoxEnvironment globals;
+        private LoxEnvironment environment;
+
+        public LoxEnvironment Globals() { return globals; }
 
 		public Interpreter()
 		{
+            globals = new LoxEnvironment();
+            environment = globals;
+
+            globals.Define("clock", new Clock());
 		}
 
         public void Interpret(List<Stmt> statements)
@@ -133,6 +140,20 @@ namespace Cslox.Interpret
             return expr.value;
         }
 
+        public object visitLogicalExpr(Expr.Logical expr)
+        {
+            object left = Evaluate(expr.left);
+            if (expr.op.type == TokenType.OR)
+            {
+                if (IsTruthy(left)) return left;
+            }
+            else
+            {
+                if (!IsTruthy(left)) return left;
+            }
+            return Evaluate(expr.right);
+        }
+
         public object visitUnaryExpr(Expr.Unary expr)
         {
             object right = Evaluate(expr.right);
@@ -156,9 +177,31 @@ namespace Cslox.Interpret
 
         public object visitAssignExpr(Expr.Assign expr)
         {
-            object value = Evaluate(expr);
+            object value = Evaluate(expr.value);
             environment.Assign(expr.name, value);
             return value;
+        }
+
+        public object visitCallExpr(Expr.Call expr)
+        {
+            object callee = Evaluate(expr.callee);
+            List<object> arguments = new List<object>();
+            foreach (Expr argument in expr.arguments)
+            {
+                arguments.Add(Evaluate(argument));
+            }
+
+            if (!(callee is LoxCallable)) {
+                throw new RuntimeError(expr.paren, "Can only call functions or classes.");
+            }
+
+            LoxCallable function = (LoxCallable)callee;
+
+            if (arguments.Count() != function.Arity())
+            {
+                throw new RuntimeError(expr.paren, $"Expected {function.Arity()} arguments but got {arguments.Count()}.");
+            }
+            return function.Call(this, arguments);
         }
 
         private void CheckNumberOperand(Token op, object operand)
@@ -197,6 +240,19 @@ namespace Cslox.Interpret
             return null; // No void type ref in C#
         }
 
+        public object visitIfStmt(Stmt.If stmt)
+        {
+            if (IsTruthy(Evaluate(stmt.condition)))
+            {
+                Execute(stmt.thenBranch);
+            }
+            else if (stmt.elseBranch != null)
+            {
+                Execute(stmt.elseBranch);
+            }
+            return null; // No void type ref in C#
+        }
+
         public object visitPrintStmt(Stmt.Print stmt)
         {
             object value = Evaluate(stmt.expression);
@@ -215,13 +271,28 @@ namespace Cslox.Interpret
             return null; // No void type ref in C#
         }
 
+        public object visitWhileStmt(Stmt.While stmt)
+        {
+            try
+            {
+                while (IsTruthy(Evaluate(stmt.condition)))
+                {
+                    Execute(stmt.body);
+                }
+            } catch (BreakException)
+            {
+
+            }
+            return null; // No void type ref in C
+        }
+
         public object visitBlockStmt(Stmt.Block stmt)
         {
             ExecuteBlock(stmt.statements, new LoxEnvironment(environment));
             return null; // No void type ref in C#
         }
 
-        private void ExecuteBlock(List<Stmt> stmts, LoxEnvironment env)
+        public void ExecuteBlock(List<Stmt> stmts, LoxEnvironment env)
         {
             LoxEnvironment prev = this.environment;
             try
@@ -236,6 +307,26 @@ namespace Cslox.Interpret
             {
                 this.environment = prev;
             }
+        }
+
+        public object visitBreakStmt(Stmt.Break stmt)
+        {
+            throw new BreakException();
+        }
+
+        public object visitFunctionStmt(Stmt.Function stmt)
+        {
+            LoxFunction function = new LoxFunction(stmt, environment);
+            environment.Define(stmt.name.lexeme, function);
+            return null; // No void type ref in C#
+        }
+
+        public object visitReturnStmt(Stmt.Return stmt)
+        {
+            object value = null;
+            if (stmt.value != null) value = Evaluate(stmt.value);
+
+            throw new ReturnException(value);
         }
     }
 }

@@ -8,11 +8,13 @@ public abstract class Expr
     {
         T visitAssignExpr(Assign expr);
         T visitBinaryExpr(Binary expr);
+        T visitCallExpr(Call expr);
+        T visitConditionalExpr(Conditional expr);
         T visitGroupingExpr(Grouping expr);
         T visitLiteralExpr(Literal expr);
+        T visitLogicalExpr(Logical expr);
         T visitVariableExpr(Variable expr);
         T visitUnaryExpr(Unary expr);
-        T visitConditionalExpr(Conditional expr);
     }
 
     public class Assign : Expr
@@ -51,6 +53,46 @@ public abstract class Expr
         public readonly Expr right;
     }
 
+    public class Call : Expr
+    {
+        public Call(Expr callee, Token paren, List<Expr> arguments)
+        {
+            this.callee = callee;
+            this.paren = paren;
+            this.arguments = arguments;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitCallExpr(this);
+        }
+
+        public readonly Expr callee;
+        public readonly Token paren;
+        public readonly List<Expr> arguments;
+    }
+
+    public class Conditional : Expr
+    {
+        public Conditional(Token op, Expr cond, Expr left, Expr right)
+        {
+            this.op = op;
+            this.cond = cond;
+            this.left = left;
+            this.right = right;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitConditionalExpr(this);
+        }
+
+        public readonly Token op;
+        public readonly Expr cond;
+        public readonly Expr left;
+        public readonly Expr right;
+    }
+
     public class Grouping : Expr
     {
         public Grouping(Expr expression)
@@ -79,6 +121,25 @@ public abstract class Expr
         }
 
         public readonly Object value;
+    }
+
+    public class Logical : Expr
+    {
+        public Logical(Expr left, Token op, Expr right)
+        {
+            this.left = left;
+            this.op = op;
+            this.right = right;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitLogicalExpr(this);
+        }
+
+        public readonly Expr left;
+        public readonly Token op;
+        public readonly Expr right;
     }
 
     public class Variable : Expr
@@ -110,27 +171,6 @@ public abstract class Expr
         }
 
         public readonly Token op;
-        public readonly Expr right;
-    }
-
-    public class Conditional : Expr
-    {
-        public Conditional(Token op, Expr cond, Expr left, Expr right)
-        {
-            this.op = op;
-            this.cond = cond;
-            this.left = left;
-            this.right = right;
-        }
-
-        public override T Accept<T>(Visitor<T> visitor)
-        {
-            return visitor.visitConditionalExpr(this);
-        }
-
-        public readonly Token op;
-        public readonly Expr cond;
-        public readonly Expr left;
         public readonly Expr right;
     }
 

@@ -7,7 +7,7 @@ namespace Cslox.Interpret
 
 		private readonly Dictionary<string, object> values = new Dictionary<string, object>();
 
-		readonly LoxEnvironment? enclosing;
+		private readonly LoxEnvironment? enclosing;
 
 		public LoxEnvironment()
 		{
@@ -22,6 +22,11 @@ namespace Cslox.Interpret
 		public void Define(string name, object value)
 		{
 			values[name] = value;
+		}
+
+		public LoxEnvironment? GetEnclosing()
+		{
+			return this.enclosing;
 		}
 
 		public object Get(Token name)

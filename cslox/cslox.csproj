@@ -5,6 +5,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>Cslox</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,11 +13,13 @@
     <None Remove="Parse\" />
     <None Remove="Utilities\" />
     <None Remove="Interpret\" />
+    <None Remove="Interpret\Natives\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scan\" />
     <Folder Include="Parse\" />
     <Folder Include="Utilities\" />
     <Folder Include="Interpret\" />
+    <Folder Include="Interpret\Natives\" />
   </ItemGroup>
 </Project>

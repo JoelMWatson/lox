@@ -7,9 +7,14 @@ public abstract class Stmt
     public interface Visitor<T>
     {
         T visitBlockStmt(Block stmt);
+        T visitBreakStmt(Break stmt);
         T visitExpressionStmt(Expression stmt);
+        T visitFunctionStmt(Function stmt);
+        T visitIfStmt(If stmt);
         T visitPrintStmt(Print stmt);
+        T visitReturnStmt(Return stmt);
         T visitVarStmt(Var stmt);
+        T visitWhileStmt(While stmt);
     }
 
     public class Block : Stmt
@@ -27,6 +32,19 @@ public abstract class Stmt
         public readonly List<Stmt> statements;
     }
 
+    public class Break : Stmt
+    {
+        public Break()
+        {
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitBreakStmt(this);
+        }
+
+    }
+
     public class Expression : Stmt
     {
         public Expression(Expr expression)
@@ -40,6 +58,44 @@ public abstract class Stmt
         }
 
         public readonly Expr expression;
+    }
+
+    public class Function : Stmt
+    {
+        public Function(Token name, List<Token> parameters, List<Stmt> body)
+        {
+            this.name = name;
+            this.parameters = parameters;
+            this.body = body;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitFunctionStmt(this);
+        }
+
+        public readonly Token name;
+        public readonly List<Token> parameters;
+        public readonly List<Stmt> body;
+    }
+
+    public class If : Stmt
+    {
+        public If(Expr condition, Stmt thenBranch, Stmt elseBranch)
+        {
+            this.condition = condition;
+            this.thenBranch = thenBranch;
+            this.elseBranch = elseBranch;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitIfStmt(this);
+        }
+
+        public readonly Expr condition;
+        public readonly Stmt thenBranch;
+        public readonly Stmt elseBranch;
     }
 
     public class Print : Stmt
@@ -57,6 +113,23 @@ public abstract class Stmt
         public readonly Expr expression;
     }
 
+    public class Return : Stmt
+    {
+        public Return(Token keyword, Expr value)
+        {
+            this.keyword = keyword;
+            this.value = value;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitReturnStmt(this);
+        }
+
+        public readonly Token keyword;
+        public readonly Expr value;
+    }
+
     public class Var : Stmt
     {
         public Var(Token name, Expr initializer)
@@ -72,6 +145,23 @@ public abstract class Stmt
 
         public readonly Token name;
         public readonly Expr initializer;
+    }
+
+    public class While : Stmt
+    {
+        public While(Expr condition, Stmt body)
+        {
+            this.condition = condition;
+            this.body = body;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.visitWhileStmt(this);
+        }
+
+        public readonly Expr condition;
+        public readonly Stmt body;
     }
 
     abstract public T Accept<T>(Visitor<T> visitor);

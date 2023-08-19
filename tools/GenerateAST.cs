@@ -15,19 +15,26 @@ class GenerateAST
         {
             "Assign       : Token name, Expr value",
             "Binary       : Expr left, Token op, Expr right",
+            "Call         : Expr callee, Token paren, List<Expr> arguments",
+            "Conditional  : Token op, Expr cond, Expr left, Expr right",
             "Grouping     : Expr expression",
             "Literal      : Object value",
+            "Logical      : Expr left, Token op, Expr right",
             "Variable     : Token name",
-            "Unary        : Token op, Expr right",
-            "Conditional  : Token op, Expr cond, Expr left, Expr right"
-        });
+            "Unary        : Token op, Expr right"
+        }) ;
 
         DefineAST(outputDir, "Stmt", new List<string>()
         {
             "Block      : List<Stmt> statements",
+            "Break      : ",
             "Expression : Expr expression",
+            "Function   : Token name, List<Token> parameters, List<Stmt> body",
+            "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",
             "Print      : Expr expression",
-            "Var        : Token name, Expr initializer"
+            "Return     : Token keyword, Expr value",
+            "Var        : Token name, Expr initializer",
+            "While      : Expr condition, Stmt body"
         });
     }
 
@@ -84,7 +91,15 @@ class GenerateAST
         writer.WriteLine("        {");
 
         // store params in fields
-        string[] fields = fieldsList.Split(", ");
+        string[] fields;
+        if (fieldsList.Length == 0)
+        {
+            fields = new String[0];
+        }
+        else
+        {
+            fields = fieldsList.Split(", ");
+        }
         foreach (string field in fields)
         {
             string name = field.Split(" ")[1];
