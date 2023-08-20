@@ -36,7 +36,7 @@ namespace Cslox.Interpret
 			throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
 		}
 
-		public void Assign(Token name, object value)
+        public void Assign(Token name, object value)
 		{
 			if (values.ContainsKey(name.lexeme))
 			{
@@ -49,6 +49,26 @@ namespace Cslox.Interpret
 				return;
 			}
 			throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
+		}
+
+        private LoxEnvironment Ancestor(int distance)
+        {
+            LoxEnvironment environment = this;
+            for (int i = 0; i < distance; i++)
+            {
+                environment = environment.enclosing!;
+            }
+            return environment;
+        }
+
+        public object GetAt(int distance, string name)
+        {
+            return Ancestor(distance).values[name];
+        }
+
+        public void AssignAt(int distance, Token name, object value)
+		{
+			Ancestor(distance).values[name.lexeme] = value;
 		}
 	}
 }

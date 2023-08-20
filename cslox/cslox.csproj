@@ -13,11 +13,13 @@
     <None Remove="Parse\" />
     <None Remove="Interpret\" />
     <None Remove="Interpret\Natives\" />
+    <None Remove="Resolve\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scan\" />
     <Folder Include="Parse\" />
     <Folder Include="Interpret\" />
     <Folder Include="Interpret\Natives\" />
+    <Folder Include="Resolve\" />
   </ItemGroup>
 </Project>

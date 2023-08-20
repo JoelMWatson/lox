@@ -1,6 +1,7 @@
 ﻿using Cslox.Interpret;
 using Cslox.Parse;
 using Cslox.Scan;
+using Cslox.Resolve;
 
 namespace Cslox
 {
@@ -58,6 +59,11 @@ namespace Cslox
             List<Token> tokens = scanner.ScanTokens();
             Parser parser = new Parser(tokens);
             List<Stmt> statements = parser.Parse();
+
+            if (hadError) return;
+
+            Resolver resolver = new Resolver(interpreter);
+            resolver.Resolve(statements);
 
             if (hadError) return;
 

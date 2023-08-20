@@ -1,22 +1,22 @@
-﻿using Cslox.Scan;
-using Cslox.Interpret.Natives;
+﻿using Cslox.Interpret.Natives;
+using Cslox.Scan;
 
 namespace Cslox.Interpret
 {
-    public class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
-    {
+	public class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
+	{
         private readonly LoxEnvironment globals;
+        private readonly Dictionary<Expr, int> locals;
         private LoxEnvironment environment;
 
-        public LoxEnvironment Globals() { return globals; }
-
-		public Interpreter()
-		{
+        public Interpreter()
+        {
             globals = new LoxEnvironment();
             environment = globals;
+            locals = new Dictionary<Expr, int>();
 
             globals.Define("clock", new Clock());
-		}
+        }
 
         public void Interpret(List<Stmt> statements)
         {
@@ -27,10 +27,10 @@ namespace Cslox.Interpret
                     Execute(statement);
                 }
             }
-            catch(RuntimeError error)
+            catch (RuntimeError error)
             {
                 Lox.RuntimeError(error);
-            }     
+            }
         }
 
         public void Interpret(Expr expression)
@@ -44,6 +44,30 @@ namespace Cslox.Interpret
             {
                 Lox.RuntimeError(error);
             }
+        }
+
+        private object Evaluate(Expr expr)
+        {
+            return expr.Accept(this);
+        }
+
+        private void Execute(Stmt stmt)
+        {
+            stmt.Accept(this);
+        }
+
+        private bool IsTruthy(object obj)
+        {
+            if (obj == null) return false;
+            if (obj is bool) return (bool)obj;
+            return true;
+        }
+
+        private bool IsEqual(object? left, object? right)
+        {
+            if (left == null && right == null) return true;
+            if (left == null) return false;
+            return left.Equals(right);
         }
 
         private string Stringify(object obj)
@@ -63,7 +87,29 @@ namespace Cslox.Interpret
             return obj.ToString() ?? "";
         }
 
-        public object visitBinaryExpr(Expr.Binary expr)
+        public void Resolve(Expr expr, int depth)
+        {
+            locals[expr] = depth;
+        }
+
+        public object VisitAssignExpr(Expr.Assign expr)
+        {
+            object value = Evaluate(expr.value);
+
+            int distance = locals[expr];
+            if (distance == null)
+            {
+                globals.Assign(expr.name, value);
+            }
+            else
+            {
+                environment.AssignAt(distance, expr.name, value);
+            }
+
+            return value;
+        }
+
+        public object VisitBinaryExpr(Expr.Binary expr)
         {
             object left = Evaluate(expr.left);
             object right = Evaluate(expr.right);
@@ -118,7 +164,30 @@ namespace Cslox.Interpret
             throw new RuntimeError(op, "Operands must be numbers.");
         }
 
-        public object visitConditionalExpr(Expr.Conditional expr)
+        public object VisitCallExpr(Expr.Call expr)
+        {
+            object callee = Evaluate(expr.callee);
+            List<object> arguments = new List<object>();
+            foreach (Expr argument in expr.arguments)
+            {
+                arguments.Add(Evaluate(argument));
+            }
+
+            if (!(callee is LoxCallable))
+            {
+                throw new RuntimeError(expr.paren, "Can only call functions or classes.");
+            }
+
+            LoxCallable function = (LoxCallable)callee;
+
+            if (arguments.Count() != function.Arity())
+            {
+                throw new RuntimeError(expr.paren, $"Expected {function.Arity()} arguments but got {arguments.Count()}.");
+            }
+            return function.Call(this, arguments);
+        }
+
+        public object VisitConditionalExpr(Expr.Conditional expr)
         {
             if (IsTruthy(Evaluate(expr.cond)))
             {
@@ -130,17 +199,22 @@ namespace Cslox.Interpret
             }
         }
 
-        public object visitGroupingExpr(Expr.Grouping expr)
+        public object VisitFunctionExpr(Expr.Function expr)
+        {
+            return new LoxFunction(null, expr, environment);
+        }
+
+        public object VisitGroupingExpr(Expr.Grouping expr)
         {
             return Evaluate(expr.expression);
         }
 
-        public object visitLiteralExpr(Expr.Literal expr)
+        public object VisitLiteralExpr(Expr.Literal expr)
         {
             return expr.value;
         }
 
-        public object visitLogicalExpr(Expr.Logical expr)
+        public object VisitLogicalExpr(Expr.Logical expr)
         {
             object left = Evaluate(expr.left);
             if (expr.op.type == TokenType.OR)
@@ -154,7 +228,7 @@ namespace Cslox.Interpret
             return Evaluate(expr.right);
         }
 
-        public object visitUnaryExpr(Expr.Unary expr)
+        public object VisitUnaryExpr(Expr.Unary expr)
         {
             object right = Evaluate(expr.right);
 
@@ -170,128 +244,31 @@ namespace Cslox.Interpret
             return null;
         }
 
-        public object visitVariableExpr(Expr.Variable expr)
-        {
-            return environment.Get(expr.name);
-        }
-
-        public object visitAssignExpr(Expr.Assign expr)
-        {
-            object value = Evaluate(expr.value);
-            environment.Assign(expr.name, value);
-            return value;
-        }
-
-        public object visitCallExpr(Expr.Call expr)
-        {
-            object callee = Evaluate(expr.callee);
-            List<object> arguments = new List<object>();
-            foreach (Expr argument in expr.arguments)
-            {
-                arguments.Add(Evaluate(argument));
-            }
-
-            if (!(callee is LoxCallable)) {
-                throw new RuntimeError(expr.paren, "Can only call functions or classes.");
-            }
-
-            LoxCallable function = (LoxCallable)callee;
-
-            if (arguments.Count() != function.Arity())
-            {
-                throw new RuntimeError(expr.paren, $"Expected {function.Arity()} arguments but got {arguments.Count()}.");
-            }
-            return function.Call(this, arguments);
-        }
-
-        public object visitFunctionExpr(Expr.Function expr)
-        {
-            return new LoxFunction(null, expr, environment);
-        }
-
         private void CheckNumberOperand(Token op, object operand)
         {
             if (operand is double) return;
             throw new RuntimeError(op, "Operand must be a number.");
         }
 
-        private object Evaluate(Expr expr)
+        public object VisitVariableExpr(Expr.Variable expr)
         {
-            return expr.Accept(this);
+            return LookUpVariable(expr.name, expr);
         }
 
-        private void Execute(Stmt stmt)
+        private object LookUpVariable(Token name, Expr expr)
         {
-            stmt.Accept(this);
-        }
-
-        private bool IsTruthy(object obj)
-        {
-            if (obj == null) return false;
-            if (obj is bool) return (bool)obj;
-            return true;
-        }
-
-        private bool IsEqual(object? left, object? right)
-        {
-            if (left == null && right == null) return true;
-            if (left == null) return false;
-            return left.Equals(right);
-        }
-
-        public object visitExpressionStmt(Stmt.Expression stmt)
-        {
-            Evaluate(stmt.expression);
-            return null; // No void type ref in C#
-        }
-
-        public object visitIfStmt(Stmt.If stmt)
-        {
-            if (IsTruthy(Evaluate(stmt.condition)))
+            int distance = locals[expr];
+            if (distance == null)
             {
-                Execute(stmt.thenBranch);
+                return globals.Get(name);
             }
-            else if (stmt.elseBranch != null)
+            else
             {
-                Execute(stmt.elseBranch);
+                return environment.GetAt(distance, name.lexeme);
             }
-            return null; // No void type ref in C#
         }
 
-        public object visitPrintStmt(Stmt.Print stmt)
-        {
-            object value = Evaluate(stmt.expression);
-            Console.WriteLine(Stringify(value));
-            return null; // No void type ref in C#
-        }
-
-        public object visitVarStmt(Stmt.Var stmt)
-        {
-            object value = null;
-            if (stmt.initializer != null)
-            {
-                value = Evaluate(stmt.initializer);
-            }
-            environment.Define(stmt.name.lexeme, value);
-            return null; // No void type ref in C#
-        }
-
-        public object visitWhileStmt(Stmt.While stmt)
-        {
-            try
-            {
-                while (IsTruthy(Evaluate(stmt.condition)))
-                {
-                    Execute(stmt.body);
-                }
-            } catch (BreakException)
-            {
-
-            }
-            return null; // No void type ref in C
-        }
-
-        public object visitBlockStmt(Stmt.Block stmt)
+        public object VisitBlockStmt(Stmt.Block stmt)
         {
             ExecuteBlock(stmt.statements, new LoxEnvironment(environment));
             return null; // No void type ref in C#
@@ -314,24 +291,77 @@ namespace Cslox.Interpret
             }
         }
 
-        public object visitBreakStmt(Stmt.Break stmt)
+        public object VisitBreakStmt(Stmt.Break stmt)
         {
             throw new BreakException();
         }
 
-        public object visitFunctionStmt(Stmt.Function stmt)
+        public object VisitExpressionStmt(Stmt.Expression stmt)
+        {
+            Evaluate(stmt.expression);
+            return null; // No void type ref in C#
+        }
+
+        public object VisitFunctionStmt(Stmt.Function stmt)
         {
             LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, environment);
             environment.Define(stmt.name.lexeme, function);
             return null; // No void type ref in C#
         }
 
-        public object visitReturnStmt(Stmt.Return stmt)
+        public object VisitIfStmt(Stmt.If stmt)
+        {
+            if (IsTruthy(Evaluate(stmt.condition)))
+            {
+                Execute(stmt.thenBranch);
+            }
+            else if (stmt.elseBranch != null)
+            {
+                Execute(stmt.elseBranch);
+            }
+            return null; // No void type ref in C#
+        }
+
+        public object VisitPrintStmt(Stmt.Print stmt)
+        {
+            object value = Evaluate(stmt.expression);
+            Console.WriteLine(Stringify(value));
+            return null; // No void type ref in C#
+        }
+
+        public object VisitReturnStmt(Stmt.Return stmt)
         {
             object value = null;
             if (stmt.value != null) value = Evaluate(stmt.value);
 
             throw new ReturnException(value);
+        }
+
+        public object VisitVarStmt(Stmt.Var stmt)
+        {
+            object value = null;
+            if (stmt.initializer != null)
+            {
+                value = Evaluate(stmt.initializer);
+            }
+            environment.Define(stmt.name.lexeme, value);
+            return null; // No void type ref in C#
+        }
+
+        public object VisitWhileStmt(Stmt.While stmt)
+        {
+            try
+            {
+                while (IsTruthy(Evaluate(stmt.condition)))
+                {
+                    Execute(stmt.body);
+                }
+            }
+            catch (BreakException)
+            {
+
+            }
+            return null; // No void type ref in C
         }
     }
 }

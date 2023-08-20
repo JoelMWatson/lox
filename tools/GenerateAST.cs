@@ -77,7 +77,7 @@ class GenerateAST
         foreach (string type in types)
         {
             string typeName = type.Split(" ")[0].Trim();
-            writer.WriteLine($"        T visit{typeName}{name}({typeName} {name.ToLower()});");
+            writer.WriteLine($"        T Visit{typeName}{name}({typeName} {name.ToLower()});");
         }
         writer.WriteLine("    }");
     }
@@ -113,7 +113,7 @@ class GenerateAST
         writer.WriteLine();
         writer.WriteLine("        public override T Accept<T>(Visitor<T> visitor)");
         writer.WriteLine("        {");
-        writer.WriteLine($"            return visitor.visit{className}{baseName}(this);");
+        writer.WriteLine($"            return visitor.Visit{className}{baseName}(this);");
         writer.WriteLine("        }");
         
         // fields

@@ -6,15 +6,15 @@ public abstract class Stmt
 
     public interface Visitor<T>
     {
-        T visitBlockStmt(Block stmt);
-        T visitBreakStmt(Break stmt);
-        T visitExpressionStmt(Expression stmt);
-        T visitFunctionStmt(Function stmt);
-        T visitIfStmt(If stmt);
-        T visitPrintStmt(Print stmt);
-        T visitReturnStmt(Return stmt);
-        T visitVarStmt(Var stmt);
-        T visitWhileStmt(While stmt);
+        T VisitBlockStmt(Block stmt);
+        T VisitBreakStmt(Break stmt);
+        T VisitExpressionStmt(Expression stmt);
+        T VisitFunctionStmt(Function stmt);
+        T VisitIfStmt(If stmt);
+        T VisitPrintStmt(Print stmt);
+        T VisitReturnStmt(Return stmt);
+        T VisitVarStmt(Var stmt);
+        T VisitWhileStmt(While stmt);
     }
 
     public class Block : Stmt
@@ -26,7 +26,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitBlockStmt(this);
+            return visitor.VisitBlockStmt(this);
         }
 
         public readonly List<Stmt> statements;
@@ -40,7 +40,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitBreakStmt(this);
+            return visitor.VisitBreakStmt(this);
         }
 
     }
@@ -54,7 +54,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitExpressionStmt(this);
+            return visitor.VisitExpressionStmt(this);
         }
 
         public readonly Expr expression;
@@ -70,7 +70,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitFunctionStmt(this);
+            return visitor.VisitFunctionStmt(this);
         }
 
         public readonly Token name;
@@ -88,7 +88,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitIfStmt(this);
+            return visitor.VisitIfStmt(this);
         }
 
         public readonly Expr condition;
@@ -105,7 +105,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitPrintStmt(this);
+            return visitor.VisitPrintStmt(this);
         }
 
         public readonly Expr expression;
@@ -121,7 +121,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitReturnStmt(this);
+            return visitor.VisitReturnStmt(this);
         }
 
         public readonly Token keyword;
@@ -138,7 +138,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitVarStmt(this);
+            return visitor.VisitVarStmt(this);
         }
 
         public readonly Token name;
@@ -155,7 +155,7 @@ public abstract class Stmt
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitWhileStmt(this);
+            return visitor.VisitWhileStmt(this);
         }
 
         public readonly Expr condition;

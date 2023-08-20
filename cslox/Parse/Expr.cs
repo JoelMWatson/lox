@@ -6,16 +6,16 @@ public abstract class Expr
 
     public interface Visitor<T>
     {
-        T visitAssignExpr(Assign expr);
-        T visitBinaryExpr(Binary expr);
-        T visitCallExpr(Call expr);
-        T visitConditionalExpr(Conditional expr);
-        T visitFunctionExpr(Function expr);
-        T visitGroupingExpr(Grouping expr);
-        T visitLiteralExpr(Literal expr);
-        T visitLogicalExpr(Logical expr);
-        T visitVariableExpr(Variable expr);
-        T visitUnaryExpr(Unary expr);
+        T VisitAssignExpr(Assign expr);
+        T VisitBinaryExpr(Binary expr);
+        T VisitCallExpr(Call expr);
+        T VisitConditionalExpr(Conditional expr);
+        T VisitFunctionExpr(Function expr);
+        T VisitGroupingExpr(Grouping expr);
+        T VisitLiteralExpr(Literal expr);
+        T VisitLogicalExpr(Logical expr);
+        T VisitVariableExpr(Variable expr);
+        T VisitUnaryExpr(Unary expr);
     }
 
     public class Assign : Expr
@@ -28,7 +28,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitAssignExpr(this);
+            return visitor.VisitAssignExpr(this);
         }
 
         public readonly Token name;
@@ -46,7 +46,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitBinaryExpr(this);
+            return visitor.VisitBinaryExpr(this);
         }
 
         public readonly Expr left;
@@ -65,7 +65,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitCallExpr(this);
+            return visitor.VisitCallExpr(this);
         }
 
         public readonly Expr callee;
@@ -85,7 +85,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitConditionalExpr(this);
+            return visitor.VisitConditionalExpr(this);
         }
 
         public readonly Token op;
@@ -104,7 +104,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitFunctionExpr(this);
+            return visitor.VisitFunctionExpr(this);
         }
 
         public readonly List<Token> parameters;
@@ -120,7 +120,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitGroupingExpr(this);
+            return visitor.VisitGroupingExpr(this);
         }
 
         public readonly Expr expression;
@@ -135,7 +135,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitLiteralExpr(this);
+            return visitor.VisitLiteralExpr(this);
         }
 
         public readonly Object value;
@@ -152,7 +152,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitLogicalExpr(this);
+            return visitor.VisitLogicalExpr(this);
         }
 
         public readonly Expr left;
@@ -169,7 +169,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitVariableExpr(this);
+            return visitor.VisitVariableExpr(this);
         }
 
         public readonly Token name;
@@ -185,7 +185,7 @@ public abstract class Expr
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.visitUnaryExpr(this);
+            return visitor.VisitUnaryExpr(this);
         }
 
         public readonly Token op;
