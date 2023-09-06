@@ -1,4 +1,4 @@
-﻿namespace tools;
+﻿namespace CsTools;
 
 // Generates AST
 class GenerateAST
@@ -17,18 +17,23 @@ class GenerateAST
             "Binary       : Expr left, Token op, Expr right",
             "Call         : Expr callee, Token paren, List<Expr> arguments",
             "Conditional  : Token op, Expr cond, Expr left, Expr right",
+            "Get          : Expr obj, Token name",
             "Function     : List<Token> parameters, List<Stmt> body",
             "Grouping     : Expr expression",
             "Literal      : Object value",
             "Logical      : Expr left, Token op, Expr right",
+            "Set          : Expr obj, Token name, Expr value",
+            "Super        : Token keyword, Token method",
+            "This         : Token keyword",
+            "Unary        : Token op, Expr right",
             "Variable     : Token name",
-            "Unary        : Token op, Expr right"
         }) ;
 
         DefineAST(outputDir, "Stmt", new List<string>()
         {
             "Block      : List<Stmt> statements",
-            "Break      : ",
+            "Break      :  ",
+            "Class      : Token name, Expr.Variable superclass, List<Stmt.Function> methods",
             "Expression : Expr expression",
             "Function   : Token name, Expr.Function function",
             "If         : Expr condition, Stmt thenBranch, Stmt elseBranch",

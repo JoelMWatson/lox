@@ -1,4 +1,4 @@
-﻿namespace Cslox.Interpret.Natives
+﻿namespace Cslox.Interpret.Function.Native
 {
 	public class Clock : LoxCallable
 	{

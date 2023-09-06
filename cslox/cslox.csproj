@@ -12,14 +12,18 @@
     <None Remove="Scan\" />
     <None Remove="Parse\" />
     <None Remove="Interpret\" />
-    <None Remove="Interpret\Natives\" />
     <None Remove="Resolve\" />
+    <None Remove="Interpret\Class\" />
+    <None Remove="Interpret\Function\" />
+    <None Remove="Interpret\Function\Native\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Scan\" />
     <Folder Include="Parse\" />
     <Folder Include="Interpret\" />
-    <Folder Include="Interpret\Natives\" />
     <Folder Include="Resolve\" />
+    <Folder Include="Interpret\Class\" />
+    <Folder Include="Interpret\Function\" />
+    <Folder Include="Interpret\Function\Native\" />
   </ItemGroup>
 </Project>

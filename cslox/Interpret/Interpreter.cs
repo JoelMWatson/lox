@@ -1,4 +1,6 @@
-﻿using Cslox.Interpret.Natives;
+﻿using Cslox.Interpret.Class;
+using Cslox.Interpret.Function;
+using Cslox.Interpret.Function.Native;
 using Cslox.Scan;
 
 namespace Cslox.Interpret
@@ -201,7 +203,17 @@ namespace Cslox.Interpret
 
         public object VisitFunctionExpr(Expr.Function expr)
         {
-            return new LoxFunction(null, expr, environment);
+            return new LoxFunction(null, expr, environment, false);
+        }
+
+        public object VisitGetExpr(Expr.Get expr)
+        {
+            Object obj = Evaluate(expr.obj);
+            if (obj is LoxInstance)
+            {
+                return ((LoxInstance)obj).Get(expr.name);
+            }
+            throw new RuntimeError(expr.name, "Only instances have properties.");
         }
 
         public object VisitGroupingExpr(Expr.Grouping expr)
@@ -226,6 +238,36 @@ namespace Cslox.Interpret
                 if (!IsTruthy(left)) return left;
             }
             return Evaluate(expr.right);
+        }
+
+        public object VisitSetExpr(Expr.Set expr)
+        {
+            object obj = Evaluate(expr.obj);
+            if (!(obj is LoxInstance))
+            {
+                throw new RuntimeError(expr.name, "Only instances have fields.");
+            }
+            object value = Evaluate(expr.value);
+            ((LoxInstance)obj).Set(expr.name, value);
+            return value;
+        }
+
+        public object VisitSuperExper(Expr.Super expr)
+        {
+            int distance = locals[expr];
+            LoxClass superclass = (LoxClass)environment.GetAt(distance, "super");
+            LoxInstance obj = (LoxInstance)environment.GetAt(distance - 1, "this");
+            LoxFunction method = superclass.FindMethod(expr.method.lexeme);
+            if (method == null)
+            {
+                throw new RuntimeError(expr.method, $"Undefined property '{expr.method.lexeme}'.");
+            }
+            return method.Bind(obj);
+        }
+
+        public object VisitThisExpr(Expr.This expr)
+        {
+            return LookUpVariable(expr.keyword, expr);
         }
 
         public object VisitUnaryExpr(Expr.Unary expr)
@@ -296,6 +338,38 @@ namespace Cslox.Interpret
             throw new BreakException();
         }
 
+        public object VisitClassStmt(Stmt.Class stmt)
+        {
+            Object superclass = null;
+            if (stmt.superclass != null)
+            {
+                superclass = Evaluate(stmt.superclass);
+                if (!(superclass is LoxClass))
+                {
+                    throw new RuntimeError(stmt.superclass.name, "Superclass must be a class.");
+                }
+            }
+            environment.Define(stmt.name.lexeme, null);
+            if (stmt.superclass != null)
+            {
+                environment = new LoxEnvironment(environment);
+                environment.Define("super", superclass);
+            }
+            Dictionary<string, LoxFunction> methods = new Dictionary<string, LoxFunction>();
+            foreach (Stmt.Function method in stmt.methods)
+            {
+                LoxFunction function = new LoxFunction(method.name.lexeme, method.function, environment, method.name.lexeme.Equals("init"));
+                methods[method.name.lexeme] = function;
+            }
+            LoxClass klass = new LoxClass(stmt.name.lexeme, (LoxClass)superclass, methods);
+            if (stmt.superclass != null)
+            {
+                environment = environment.GetEnclosing()!;
+            }
+            environment.Assign(stmt.name, klass);
+            return null;
+        }
+
         public object VisitExpressionStmt(Stmt.Expression stmt)
         {
             Evaluate(stmt.expression);
@@ -304,7 +378,7 @@ namespace Cslox.Interpret
 
         public object VisitFunctionStmt(Stmt.Function stmt)
         {
-            LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, environment);
+            LoxFunction function = new LoxFunction(stmt.name.lexeme, stmt.function, environment, stmt.name.lexeme.Equals("init"));
             environment.Define(stmt.name.lexeme, function);
             return null; // No void type ref in C#
         }

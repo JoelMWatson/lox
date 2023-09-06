@@ -8,6 +8,7 @@ public abstract class Stmt
     {
         T VisitBlockStmt(Block stmt);
         T VisitBreakStmt(Break stmt);
+        T VisitClassStmt(Class stmt);
         T VisitExpressionStmt(Expression stmt);
         T VisitFunctionStmt(Function stmt);
         T VisitIfStmt(If stmt);
@@ -43,6 +44,25 @@ public abstract class Stmt
             return visitor.VisitBreakStmt(this);
         }
 
+    }
+
+    public class Class : Stmt
+    {
+        public Class(Token name, Expr.Variable superclass, List<Stmt.Function> methods)
+        {
+            this.name = name;
+            this.superclass = superclass;
+            this.methods = methods;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitClassStmt(this);
+        }
+
+        public readonly Token name;
+        public readonly Expr.Variable superclass;
+        public readonly List<Stmt.Function> methods;
     }
 
     public class Expression : Stmt

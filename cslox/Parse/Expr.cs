@@ -10,12 +10,16 @@ public abstract class Expr
         T VisitBinaryExpr(Binary expr);
         T VisitCallExpr(Call expr);
         T VisitConditionalExpr(Conditional expr);
+        T VisitGetExpr(Get expr);
         T VisitFunctionExpr(Function expr);
         T VisitGroupingExpr(Grouping expr);
         T VisitLiteralExpr(Literal expr);
         T VisitLogicalExpr(Logical expr);
-        T VisitVariableExpr(Variable expr);
+        T VisitSetExpr(Set expr);
+        T VisitSuperExpr(Super expr);
+        T VisitThisExpr(This expr);
         T VisitUnaryExpr(Unary expr);
+        T VisitVariableExpr(Variable expr);
     }
 
     public class Assign : Expr
@@ -94,6 +98,23 @@ public abstract class Expr
         public readonly Expr right;
     }
 
+    public class Get : Expr
+    {
+        public Get(Expr obj, Token name)
+        {
+            this.obj = obj;
+            this.name = name;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitGetExpr(this);
+        }
+
+        public readonly Expr obj;
+        public readonly Token name;
+    }
+
     public class Function : Expr
     {
         public Function(List<Token> parameters, List<Stmt> body)
@@ -160,19 +181,55 @@ public abstract class Expr
         public readonly Expr right;
     }
 
-    public class Variable : Expr
+    public class Set : Expr
     {
-        public Variable(Token name)
+        public Set(Expr obj, Token name, Expr value)
         {
+            this.obj = obj;
             this.name = name;
+            this.value = value;
         }
 
         public override T Accept<T>(Visitor<T> visitor)
         {
-            return visitor.VisitVariableExpr(this);
+            return visitor.VisitSetExpr(this);
         }
 
+        public readonly Expr obj;
         public readonly Token name;
+        public readonly Expr value;
+    }
+
+    public class Super : Expr
+    {
+        public Super(Token keyword, Token method)
+        {
+            this.keyword = keyword;
+            this.method = method;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitSuperExpr(this);
+        }
+
+        public readonly Token keyword;
+        public readonly Token method;
+    }
+
+    public class This : Expr
+    {
+        public This(Token keyword)
+        {
+            this.keyword = keyword;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitThisExpr(this);
+        }
+
+        public readonly Token keyword;
     }
 
     public class Unary : Expr
@@ -190,6 +247,21 @@ public abstract class Expr
 
         public readonly Token op;
         public readonly Expr right;
+    }
+
+    public class Variable : Expr
+    {
+        public Variable(Token name)
+        {
+            this.name = name;
+        }
+
+        public override T Accept<T>(Visitor<T> visitor)
+        {
+            return visitor.VisitVariableExpr(this);
+        }
+
+        public readonly Token name;
     }
 
     abstract public T Accept<T>(Visitor<T> visitor);

@@ -1,4 +1,4 @@
-﻿namespace Cslox.Interpret
+﻿namespace Cslox.Interpret.Function
 {
 	public interface LoxCallable
 	{

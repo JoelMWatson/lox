@@ -1,4 +1,5 @@
-﻿using Cslox.Scan;
+﻿using Cslox.Interpret.Class;
+using Cslox.Scan;
 
 namespace Cslox.Parse
 {
@@ -31,13 +32,13 @@ namespace Cslox.Parse
 
         private Stmt Statement()
         {
+            if (Match(TokenType.BREAK)) return Break();
             if (Match(TokenType.FOR)) return ForStatement();
             if (Match(TokenType.IF)) return IfStatement();
+            if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
             if (Match(TokenType.PRINT)) return PrintStatement();
             if (Match(TokenType.RETURN)) return ReturnStatement();
             if (Match(TokenType.WHILE)) return WhileStatement();
-            if (Match(TokenType.LEFT_BRACE)) return new Stmt.Block(Block());
-            if (Match(TokenType.BREAK)) return Break();
             return ExpressionStatement();
         }
 
@@ -61,10 +62,11 @@ namespace Cslox.Parse
         {
             try
             {
+                if (Match(TokenType.CLASS)) return ClassDeclaration();
                 if (Check(TokenType.FUN) && CheckNext(TokenType.IDENTIFIER))
                 {
                     Consume(TokenType.FUN, null);
-                    return Function("funciton");
+                    return FunctionDeclaration("funciton");
                 }
                 if (Match(TokenType.VAR)) return VarDeclaration();
                 return Statement();
@@ -74,6 +76,51 @@ namespace Cslox.Parse
                 Synchronize();
                 return null;
             }
+        }
+
+        private Stmt.Class ClassDeclaration()
+        {
+            Token name = Consume(TokenType.IDENTIFIER, "Expect class name.");
+            Expr.Variable superclass = null;
+            if (Match(TokenType.LESS)) {
+                Consume(TokenType.IDENTIFIER, "Expect superclass name.");
+                superclass = new Expr.Variable(Previous());
+            }
+            Consume(TokenType.LEFT_BRACE, "Expect '{' before class body");
+            List<Stmt.Function> methods = new List<Stmt.Function>();
+            while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+            {
+                methods.Add(FunctionDeclaration("method"));
+            }
+            Consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
+            return new Stmt.Class(name, superclass, methods);
+        }
+
+        private Stmt.Function FunctionDeclaration(string kind)
+        {
+            Token name = Consume(TokenType.IDENTIFIER, $"Expect {kind} name.");
+            return new Stmt.Function(name, FunctionBody(kind));
+        }
+
+        private Expr.Function FunctionBody(string kind)
+        {
+            Consume(TokenType.LEFT_PAREN, $"Expect '(' after {kind} name.");
+            List<Token> parameters = new List<Token>();
+            if (!Check(TokenType.RIGHT_PAREN))
+            {
+                do
+                {
+                    if (parameters.Count() >= 255)
+                    {
+                        Error(Peek(), "Cannot have more than 255 parameters.");
+                    }
+                    parameters.Add(Consume(TokenType.IDENTIFIER, "Expect parameter name."));
+                } while (Match(TokenType.COMMA));
+            }
+            Consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
+            Consume(TokenType.LEFT_BRACE, $"Expect '}}' before {kind} body.");
+            List<Stmt> body = Block();
+            return new Expr.Function(parameters, body);
         }
 
         private Stmt VarDeclaration()
@@ -215,33 +262,6 @@ namespace Cslox.Parse
             return new Stmt.Break();
         }
 
-        private Stmt.Function Function(string kind)
-        {
-            Token name = Consume(TokenType.IDENTIFIER, $"Expect {kind} name.");
-            return new Stmt.Function(name, FunctionBody(kind));
-        }
-
-        private Expr.Function FunctionBody(string kind)
-        {
-            Consume(TokenType.LEFT_PAREN, $"Expect '(' after {kind} name.");
-            List<Token> parameters = new List<Token>();
-            if (!Check(TokenType.RIGHT_PAREN))
-            {
-                do
-                {
-                    if (parameters.Count() >= 255)
-                    {
-                        Error(Peek(), "Cannot have more than 255 parameters.");
-                    }
-                    parameters.Add(Consume(TokenType.IDENTIFIER, "Expect parameter name."));
-                } while (Match(TokenType.COMMA));
-            }
-            Consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters.");
-            Consume(TokenType.LEFT_BRACE, $"Expect '}}' before {kind} body.");
-            List<Stmt> body = Block();
-            return new Expr.Function(parameters, body);
-        }
-
         private Expr Assignment()
         {
             Expr expr = Or();
@@ -249,10 +269,14 @@ namespace Cslox.Parse
             {
                 Token equals = Previous();
                 Expr value = Assignment();
-                if (expr.GetType() == typeof(Expr.Variable)) 
+                if (expr is Expr.Variable) 
                 {
                     Token name = ((Expr.Variable)expr).name;
                     return new Expr.Assign(name, value);
+                } else if (expr is Expr.Get)
+                {
+                    Expr.Get get = (Expr.Get)expr;
+                    return new Expr.Set(get.obj, get.name, value);
                 }
                 Error(equals, "Invalid assignment target.");
             }
@@ -381,6 +405,11 @@ namespace Cslox.Parse
                 {
                     expr = FinishCall(expr);
                 }
+                else if (Match(TokenType.DOT))
+                {
+                    Token name = Consume(TokenType.IDENTIFIER, "Exect property name after '.'.");
+                    expr = new Expr.Get(expr, name);
+                }
                 else
                 {
                     break;
@@ -429,6 +458,15 @@ namespace Cslox.Parse
             }
 
             if (Match(TokenType.FUN)) return FunctionBody("function");
+
+            if (Match(TokenType.SUPER))
+            {
+                Token keyword = Previous();
+                Consume(TokenType.DOT, "Expect '.' after 'super'.");
+                Token method = Consume(TokenType.IDENTIFIER, "Expect superclass method name.");
+                return new Expr.Super(keyword, method);
+            }
+            if (Match(TokenType.THIS)) return new Expr.This(Previous());
 
             throw Error(Peek(), "Expected expression.");
         }

@@ -9,6 +9,7 @@ namespace Cslox.Resolve
         private readonly Interpreter interpreter;
         private readonly Stack<Dictionary<string, bool>> scopes = new Stack<Dictionary<string, bool>>();
         private FunctionType currentFunction = FunctionType.NONE;
+        private ClassType currentClass = ClassType.NONE;
 
 		public Resolver(Interpreter interpreter)
 		{
@@ -106,7 +107,14 @@ namespace Cslox.Resolve
 
         public object VisitFunctionExpr(Expr.Function expr)
         {
-            ResolveFunction(expr, FunctionType.FUNCTION);
+            if (currentClass == ClassType.NONE)
+            {
+                ResolveFunction(expr, FunctionType.FUNCTION);
+            }
+            else
+            {
+                ResolveFunction(expr, FunctionType.METHOD);
+            }
             return null;
         }
 
@@ -125,6 +133,12 @@ namespace Cslox.Resolve
             currentFunction = enclosingFunction;
         }
 
+        public object VisitGetExpr(Expr.Get expr)
+        {
+            Resolve(expr.obj);
+            return null;
+        }
+
         public object VisitGroupingExpr(Expr.Grouping expr)
         {
             Resolve(expr.expression);
@@ -140,6 +154,37 @@ namespace Cslox.Resolve
         {
             Resolve(expr.left);
             Resolve(expr.right);
+            return null;
+        }
+
+        public object VisitSetExpr(Expr.Set expr)
+        {
+            Resolve(expr.value);
+            Resolve(expr.obj);
+            return null;
+        }
+
+        public object VisitSuperExpr(Expr.Super expr)
+        {
+            if (currentClass == ClassType.NONE)
+            {
+                Lox.Error(expr.keyword, "Can't use 'super' outside of a class.");
+            }
+            else if (currentClass == ClassType.CLASS)
+            {
+                Lox.Error(expr.keyword, "Can't use 'super' in a class with no superclass.");
+            }
+            ResolveLocal(expr, expr.keyword);
+            return null;
+        }
+
+        public object VisitThisExpr(Expr.This expr)
+        {
+            if (currentClass == ClassType.NONE)
+            {
+                Lox.Error(expr.keyword, "Cannot call 'this' outside of a class");
+            }
+            ResolveLocal(expr, expr.keyword);
             return null;
         }
 
@@ -170,6 +215,40 @@ namespace Cslox.Resolve
 
         public object VisitBreakStmt(Stmt.Break stmt)
         {
+            return null;
+        }
+
+        public object VisitClassStmt(Stmt.Class stmt)
+        {
+            ClassType enclosing = currentClass;
+            currentClass = ClassType.CLASS;
+            Declare(stmt.name);
+            Define(stmt.name);
+            if (stmt.superclass != null && stmt.name.lexeme.Equals(stmt.superclass.name.lexeme))
+            {
+                Lox.Error(stmt.superclass.name, "A class can't inherit from itself.");
+            }
+            if (stmt.superclass != null)
+            {
+                BeginScope();
+                scopes.Peek()["super"] = true;
+                currentClass = ClassType.SUBCLASS;
+                Resolve(stmt.superclass);
+            }
+            BeginScope();
+            scopes.Peek()["this"] = true;
+            foreach (Stmt.Function method in stmt.methods)
+            {
+                FunctionType declaration = FunctionType.METHOD;
+                if (method.name.lexeme.Equals("init"))
+                {
+                    declaration = FunctionType.INITIALIZER;
+                }
+                ResolveFunction(method.function, declaration);
+            }
+            EndScope();
+            if (stmt.superclass != null) EndScope();
+            currentClass = enclosing;
             return null;
         }
 
@@ -207,7 +286,14 @@ namespace Cslox.Resolve
             {
                 Lox.Error(stmt.keyword, "Cannot return from top-level code.");
             }
-            if (stmt.value != null) Resolve(stmt.value);
+            if (stmt.value != null)
+            {
+                if (currentFunction == FunctionType.INITIALIZER)
+                {
+                    Lox.Error(stmt.keyword, "Can't return a value from an initializer.");
+                }
+                Resolve(stmt.value);
+            }
             return null;
         }
 
