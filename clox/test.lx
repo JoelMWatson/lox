@@ -4,3 +4,40 @@ print true;
 print 2 + 1;
 print nil;
 
+
+var a = "ham";
+
+print "ham";
+{
+    var b = "eggs";
+    print a + " " + b;
+
+    {
+        var a = "waffles";
+        print a;
+    }
+    print a;
+}
+
+if (0>1) {
+    print "incorrect";
+} else {
+    print "zero is not greater than 1";
+}
+
+if (1<2) {
+    print "one is less than two";
+} else {
+    print "incorrect";
+}
+
+var b = 0;
+
+while (b < 5) {
+    b = b + 1;
+    print b;
+}
+
+for (var i = 0; i < 5; i = i + 1) {
+    print i;
+}
