@@ -5,22 +5,23 @@ print 2 + 1;
 print nil;
 
 
-var a = "ham";
-
-print "ham";
+//var a = "ham";
+//print a;
 {
     var b = "eggs";
-    print a + " " + b;
-
+  //  var c = a + b; 
+    //print c;
     {
         var a = "waffles";
         print a;
     }
-    print a;
+    print b;
 }
+//print a;
+print "incorrect";
 
 if (0>1) {
-    print "incorrect";
+    
 } else {
     print "zero is not greater than 1";
 }
@@ -31,13 +32,18 @@ if (1<2) {
     print "incorrect";
 }
 
-var b = 0;
-
-while (b < 5) {
-    b = b + 1;
-    print b;
-}
 
 for (var i = 0; i < 5; i = i + 1) {
     print i;
 }
+
+fun fib(n) {
+    if (n < 2) return n;
+    return fib(n-2) + fib(n-1);
+}
+
+var start = clock();
+print fib(35);
+print clock() - start;
+
+// Bug is in Globals, Locals, or Strings (or all 3)
