@@ -5,23 +5,22 @@ print 2 + 1;
 print nil;
 
 
-//var a = "ham";
-//print a;
+var a = "ham";
+print a;
 {
     var b = "eggs";
-  //  var c = a + b; 
-    //print c;
+    var c = a + " " + b; 
+    print c;
     {
         var a = "waffles";
         print a;
     }
     print b;
 }
-//print a;
-print "incorrect";
+print a;
 
 if (0>1) {
-    
+    print "incorrect";
 } else {
     print "zero is not greater than 1";
 }
