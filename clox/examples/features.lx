@@ -1,0 +1,66 @@
+// Tests 
+
+// statements & expressions
+print "one";
+print true;
+print 2 + 1;
+print nil;
+
+// assignment & globals
+var a = "ham";
+print a;
+
+// blocks & locals
+{
+    var b = "eggs";
+    var c = a + " " + b; 
+    print c;
+    {
+        var a = "waffles";
+        print a;
+    }
+    print b;
+}
+print a;
+
+
+// flow control
+if (0>1) {
+    print "incorrect then branch";
+} else {
+    print "correct else branch";
+}
+if (1<2) {
+    print "correct then branch";
+} else {
+    print "incorrect else branch";
+}
+
+// loops
+for (var i = 0; i < 5; i = i + 1) {
+    print i;
+}
+
+// function definitions
+fun add5(n) {
+    print n+5;
+}
+
+// function calls & native functions
+var start = clock();
+add5(35);
+print clock() - start;
+
+// closures
+var local = "incorrect closure";
+fun makeClosure() {
+    var local = "correct closure";
+    fun closure() {
+        print local;
+    }
+    return closure;
+}
+var closure = makeClosure();
+closure();
+
+
